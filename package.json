@@ -1,6 +1,6 @@
 {
   "name": "three-gcode-loader",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "THREE.GCodeLoader repackaged as a node module",
   "main": "index.js",
   "scripts": {
