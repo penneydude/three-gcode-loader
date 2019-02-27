@@ -16,10 +16,16 @@
     "gcode",
     "loader"
   ],
-  "author": "penneydude (https://www.nckpnny.com)",
+  "author": {
+    "name": "Nick Penney",
+    "url": "https://www.nckpnny.com"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/penneydude/three-gcode-loader/issues"
   },
-  "homepage": "https://github.com/penneydude/three-gcode-loader#readme"
+  "homepage": "https://github.com/penneydude/three-gcode-loader#readme",
+  "peerDependencies": {
+    "three": ">= 0.101.0"
+  }
 }

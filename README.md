@@ -1,10 +1,10 @@
 # three-gcode-loader
 
-[THREE.GCodeLoader](https://threejs.org/examples/js/loaders/GCodeLoader.js) repackaged as a node module
+[THREE.GCodeLoader](https://threejs.org/examples/js/loaders/GCodeLoader.js) from the official repo examples repackaged as a node module
 
 
 # Install
 
-`npm i --save three`
+`npm install three`
 
-`npm i --save three-gcode-loader`
+`npm install three-gcode-loader`
