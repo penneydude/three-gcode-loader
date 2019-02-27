@@ -1,5 +1,4 @@
 # three-gcode-loader
-THREE.GCodeLoader repackaged as a node module
 
 [THREE.GCodeLoader](https://threejs.org/examples/js/loaders/GCodeLoader.js) repackaged as a node module
 
