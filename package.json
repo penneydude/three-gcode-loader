@@ -1,0 +1,25 @@
+{
+  "name": "three-gcode-loader",
+  "version": "0.0.1",
+  "description": "THREE.GCodeLoader repackaged as a node module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/penneydude/three-gcode-loader"
+  },
+  "keywords": [
+    "three",
+    "threejs",
+    "gcode",
+    "loader"
+  ],
+  "author": "penneydude (https://www.nckpnny.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/penneydude/three-gcode-loader/issues"
+  },
+  "homepage": "https://github.com/penneydude/three-gcode-loader#readme"
+}
