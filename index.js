@@ -11,30 +11,38 @@ var THREE = require('three');
 THREE.GCodeLoader = function ( manager ) {
 
 	this.manager = ( manager !== undefined ) ? manager : THREE.DefaultLoadingManager;
-
 	this.splitLayer = false;
 
 };
 
 THREE.GCodeLoader.prototype.load = function ( url, onLoad, onProgress, onError ) {
-
 	var self = this;
 
 	var loader = new THREE.FileLoader( self.manager );
+
+	if (self.requestHeader) loader.setRequestHeader(self.requestHeader);
+	if (self.withCredentials) loader.setWithCredentials(self.withCredentials);
+
 	loader.setPath( self.path );
 	loader.load( url, function ( text ) {
-
 		onLoad( self.parse( text ) );
-
 	}, onProgress, onError );
 
 };
 
-THREE.GCodeLoader.prototype.setPath = function ( value ) {
+THREE.GCodeLoader.prototype.setRequestHeader = function(requestHeader) {
+	this.requestHeader = requestHeader;
+	return this;
+},
 
+THREE.GCodeLoader.prototype.setWithCredentials = function(withCredentials) {
+	this.withCredentials = withCredentials;
+	return this;
+},
+
+THREE.GCodeLoader.prototype.setPath = function ( value ) {
 	this.path = value;
 	return this;
-
 };
 
 THREE.GCodeLoader.prototype.parse = function ( data ) {
