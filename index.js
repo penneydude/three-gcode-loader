@@ -10,6 +10,7 @@
  */
 
 import * as THREE from "three";
+import { BufferGeometryUtils } from 'three/examples/jsm/utils/BufferGeometryUtils';
 
 var GCodeLoader = function(manager) {
   this.manager = manager !== undefined ? manager : THREE.DefaultLoadingManager;
@@ -162,22 +163,15 @@ GCodeLoader.prototype = {
     }
 
     function addObject(vertex, extruding) {
-      var geometry = new THREE.BufferGeometry();
-      geometry.addAttribute(
-        "position",
-        new THREE.Float32BufferAttribute(vertex, 3)
-      );
-
-      var segments = new THREE.LineSegments(
-        geometry,
-        extruding ? extrudingMaterial : pathMaterial
-      );
-      segments.name = "layer" + i;
-      object.add(segments);
+      if (extruding) {
+        pathVertices = pathVertices.concat(vertex);
+      } else {
+        travelVertices = travelVertices.concat(vertex);
+      }
     }
 
-    var object = new THREE.Group();
-    object.name = "gcode";
+    var pathVertices = [];
+    var travelVertices = [];
 
     if (this.splitLayer) {
       for (var i = 0; i < layers.length; i++) {
@@ -200,9 +194,21 @@ GCodeLoader.prototype = {
       addObject(pathVertex, false);
     }
 
-    object.quaternion.setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0));
+    // object.quaternion.setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0));
 
-    return object;
+    function disposeArray() {
+      this.array = null;
+    }
+
+    var pathGeometry = new THREE.BufferGeometry();
+    var travelGeometry = new THREE.BufferGeometry();
+    pathGeometry.addAttribute('position', new THREE.Float32BufferAttribute(pathVertices, 3).onUpload(disposeArray));
+    travelGeometry.addAttribute('position', new THREE.Float32BufferAttribute(travelVertices, 3).onUpload(disposeArray));
+
+    pathGeometry.computeBoundingSphere();
+    travelGeometry.computeBoundingSphere();
+
+    return [pathGeometry, travelGeometry];
   }
 };
 

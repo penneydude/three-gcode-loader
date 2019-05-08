@@ -12,6 +12,8 @@
 
 ## Usage
 
+Returns an array of THREE BufferGeometries `[pathGeometry, travelGeometry]`, which represents the print path and the travel path parsed from the gcode file.
+
 ```js
 
 import * as THREE from 'three';
@@ -22,8 +24,9 @@ var loader = new GCodeLoader()
 loader.setRequestHeader({ Authorization: 'Bearer token' });
 loader.setWithCredentials(true);
 
-loader.load('https://secured-api/path/to/file.gcode', function (object) {
-  scene.add(object);
+loader.load('https://secured-api/path/to/file.gcode', function (geo) {
+  var pathGeo = geo[0];
+  var travelGeo = geo[1];
 });
 
 ```
