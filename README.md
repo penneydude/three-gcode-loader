@@ -12,7 +12,7 @@
 
 ## Usage
 
-Returns an array of THREE BufferGeometries `[pathGeometry, travelGeometry]`, which represents the print path and the travel path parsed from the gcode file.
+Returns an array layer vertices and an array of indices which indicate layer boundaries.
 
 ```js
 
@@ -24,9 +24,9 @@ var loader = new GCodeLoader()
 loader.setRequestHeader({ Authorization: 'Bearer token' });
 loader.setWithCredentials(true);
 
-loader.load('https://secured-api/path/to/file.gcode', function (geo) {
-  var pathGeo = geo[0];
-  var travelGeo = geo[1];
+loader.load('https://secured-api/path/to/file.gcode', function (data) {
+  var layers = data[0];
+  var layerIndices = data[1];
 });
 
 ```

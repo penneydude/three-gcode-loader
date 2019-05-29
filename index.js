@@ -9,11 +9,13 @@
  * @author joewalnes
  */
 
-import * as THREE from "three";
+import { Vector3 } from 'three/src/math/Vector3';
+import { DefaultLoadingManager } from 'three/src/loaders/LoadingManager';
+import { FileLoader } from 'three/src/loaders/FileLoader';
 import { BufferGeometryUtils } from 'three/examples/jsm/utils/BufferGeometryUtils';
 
 var GCodeLoader = function(manager) {
-  this.manager = manager !== undefined ? manager : THREE.DefaultLoadingManager;
+  this.manager = manager !== undefined ? manager : DefaultLoadingManager;
   this.splitLayer = false;
 };
 
@@ -23,7 +25,7 @@ GCodeLoader.prototype = {
   load: function(url, onLoad, onProgress, onError) {
     var self = this;
 
-    var loader = new THREE.FileLoader(self.manager);
+    var loader = new FileLoader(self.manager);
 
     if (self.requestHeader) loader.setRequestHeader(self.requestHeader);
     if (self.withCredentials) loader.setWithCredentials(self.withCredentials);
@@ -55,6 +57,8 @@ GCodeLoader.prototype = {
   },
 
   parse: function(data) {
+    let t1 = performance.now();
+
     var state = {
       x: 0,
       y: 0,
@@ -62,37 +66,37 @@ GCodeLoader.prototype = {
       e: 0,
       f: 0,
       extruding: false,
-      relative: false
+      relative: false,
     };
-    var layers = [];
 
-    var currentLayer = undefined;
+    let paths = new Array([]);
+    let layers = new Array([]);
+    let layerIndices = new Array();
 
-    var pathMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
-    pathMaterial.name = "path";
+    let currentZ = undefined;
 
-    var extrudingMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00 });
-    extrudingMaterial.name = "extruded";
+    // function newLayer(line) {
+    //   currentLayer = { vertex: [], extrudeIndex: [], z: line.z };
+    //   layers.push(currentLayer);
+    // }
 
-    function newLayer(line) {
-      currentLayer = { vertex: [], pathVertex: [], z: line.z };
-      layers.push(currentLayer);
-    }
-
-    //Create lie segment between p1 and p2
-    function addSegment(p1, p2) {
-      if (currentLayer === undefined) {
-        newLayer(p1);
-      }
-
-      if (line.extruding) {
-        currentLayer.vertex.push(p1.x, p1.y, p1.z);
-        currentLayer.vertex.push(p2.x, p2.y, p2.z);
-      } else {
-        currentLayer.pathVertex.push(p1.x, p1.y, p1.z);
-        currentLayer.pathVertex.push(p2.x, p2.y, p2.z);
-      }
-    }
+    //Create line segment between p1 and p2
+    // function addSegment(p1, p2) {
+    //   if (currentLayer === undefined) {
+    //     newLayer(p1);
+    //   }
+    //
+    //   currentLayer.vertex.push(p1.x, p1.y, p1.z);
+    //   currentLayer.vertex.push(p2.x, p2.y, p2.z);
+    //
+    //   if (line.extruding) {
+    //     currentLayer.extrudeIndex.push(true);
+    //     currentLayer.extrudeIndex.push(true);
+    //   } else {
+    //     currentLayer.extrudeIndex.push(false);
+    //     currentLayer.extrudeIndex.push(false);
+    //   }
+    // }
 
     function delta(v1, v2) {
       return state.relative ? v2 : v2 - v1;
@@ -133,12 +137,14 @@ GCodeLoader.prototype = {
         if (delta(state.e, line.e) > 0) {
           line.extruding = delta(state.e, line.e) > 0;
 
-          if (currentLayer == undefined || line.z != currentLayer.z) {
+          if (currentZ == undefined || line.z != currentZ) {
             newLayer(line);
+            layerIndices.push(i);
           }
         }
 
-        addSegment(state, line);
+        // addSegment(state, line);
+        addPath(state, line);
         state = line;
       } else if (cmd === "G2" || cmd === "G3") {
         //G2/G3 - Arc Movement ( G2 clock wise and G3 counter clock wise )
@@ -162,53 +168,74 @@ GCodeLoader.prototype = {
       }
     }
 
-    function addObject(vertex, extruding) {
-      if (extruding) {
-        pathVertices = pathVertices.concat(vertex);
+    function newLayer(line) {
+      currentZ = line.z;
+      layers.push(paths);
+      paths = new Array([]);
+    }
+
+    function addPath(p1, p2) {
+      if (line.extruding) {
+        paths[paths.length - 1].push(new THREE.Vector3(p1.x, p1.y, p1.z));
+        paths[paths.length - 1].push(new THREE.Vector3(p2.x, p2.y, p2.z));
       } else {
-        travelVertices = travelVertices.concat(vertex);
+        if (paths[paths.length - 1].length > 0) paths.push([]);
       }
     }
 
-    var pathVertices = [];
-    var travelVertices = [];
-
-    if (this.splitLayer) {
-      for (var i = 0; i < layers.length; i++) {
-        var layer = layers[i];
-        addObject(layer.vertex, true);
-        addObject(layer.pathVertex, false);
-      }
-    } else {
-      var vertex = [],
-        pathVertex = [];
-
-      for (var i = 0; i < layers.length; i++) {
-        var layer = layers[i];
-
-        vertex = vertex.concat(layer.vertex);
-        pathVertex = pathVertex.concat(layer.pathVertex);
-      }
-
-      addObject(vertex, true);
-      addObject(pathVertex, false);
-    }
+    // function addObject(vertex, extruding) {
+    //   pathVertices = pathVertices.concat(vertex);
+    //
+    //   if (!extruding) {
+    //     travelVertices = travelVertices.concat(vertex);
+    //   }
+    // }
+    //
+    // var pathVertices = [];
+    // var travelVertices = [];
+    //
+    // if (this.splitLayer) {
+    //   for (var i = 0; i < layers.length; i++) {
+    //     var layer = layers[i];
+    //     addObject(layer.vertex, true);
+    //     addObject(layer.pathVertex, false);
+    //   }
+    // } else {
+    //   var vertex = [],
+    //     pathVertex = [];
+    //
+    //   for (var i = 0; i < layers.length; i++) {
+    //     var layer = layers[i];
+    //
+    //     vertex = vertex.concat(layer.vertex);
+    //     pathVertex = pathVertex.concat(layer.pathVertex);
+    //   }
+    //
+    //   addObject(vertex, true);
+    //   addObject(pathVertex, false);
+    // }
 
     // object.quaternion.setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0));
 
-    function disposeArray() {
-      this.array = null;
-    }
+    // function disposeArray() {
+    //   this.array = null;
+    // }
 
-    var pathGeometry = new THREE.BufferGeometry();
-    var travelGeometry = new THREE.BufferGeometry();
-    pathGeometry.addAttribute('position', new THREE.Float32BufferAttribute(pathVertices, 3).onUpload(disposeArray));
-    travelGeometry.addAttribute('position', new THREE.Float32BufferAttribute(travelVertices, 3).onUpload(disposeArray));
+    // var pathGeometry = new THREE.BufferGeometry();
+    // var travelGeometry = new THREE.BufferGeometry();
+    // pathGeometry.addAttribute('position', new THREE.Float32BufferAttribute(pathVertices, 3).onUpload(disposeArray));
+    // travelGeometry.addAttribute('position', new THREE.Float32BufferAttribute(travelVertices, 3).onUpload(disposeArray));
+    //
+    // pathGeometry.rotateX(-Math.PI / 2);
+    // travelGeometry.rotateX(-Math.PI / 2);
+    //
+    // pathGeometry.computeBoundingSphere();
+    // travelGeometry.computeBoundingSphere();
 
-    pathGeometry.computeBoundingSphere();
-    travelGeometry.computeBoundingSphere();
+    let t2 = performance.now();
+    console.log(`Gcode parse: ${t2-t1} ms`);
 
-    return [pathGeometry, travelGeometry];
+    return [layers, layerIndices];
   }
 };
 
