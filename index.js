@@ -15,7 +15,7 @@ import { FileLoader } from 'three/src/loaders/FileLoader';
 import { BufferGeometryUtils } from 'three/examples/jsm/utils/BufferGeometryUtils';
 
 var GCodeLoader = function(manager) {
-  this.manager = manager !== undefined ? manager : DefaultLoadingManager;
+  this.manager = (manager !== undefined) ? manager : DefaultLoadingManager;
   this.splitLayer = false;
 };
 
@@ -57,8 +57,6 @@ GCodeLoader.prototype = {
   },
 
   parse: function(data) {
-    let t1 = performance.now();
-
     var state = {
       x: 0,
       y: 0,
@@ -74,29 +72,6 @@ GCodeLoader.prototype = {
     let layerIndices = new Array();
 
     let currentZ = undefined;
-
-    // function newLayer(line) {
-    //   currentLayer = { vertex: [], extrudeIndex: [], z: line.z };
-    //   layers.push(currentLayer);
-    // }
-
-    //Create line segment between p1 and p2
-    // function addSegment(p1, p2) {
-    //   if (currentLayer === undefined) {
-    //     newLayer(p1);
-    //   }
-    //
-    //   currentLayer.vertex.push(p1.x, p1.y, p1.z);
-    //   currentLayer.vertex.push(p2.x, p2.y, p2.z);
-    //
-    //   if (line.extruding) {
-    //     currentLayer.extrudeIndex.push(true);
-    //     currentLayer.extrudeIndex.push(true);
-    //   } else {
-    //     currentLayer.extrudeIndex.push(false);
-    //     currentLayer.extrudeIndex.push(false);
-    //   }
-    // }
 
     function delta(v1, v2) {
       return state.relative ? v2 : v2 - v1;
@@ -182,58 +157,6 @@ GCodeLoader.prototype = {
         if (paths[paths.length - 1].length > 0) paths.push([]);
       }
     }
-
-    // function addObject(vertex, extruding) {
-    //   pathVertices = pathVertices.concat(vertex);
-    //
-    //   if (!extruding) {
-    //     travelVertices = travelVertices.concat(vertex);
-    //   }
-    // }
-    //
-    // var pathVertices = [];
-    // var travelVertices = [];
-    //
-    // if (this.splitLayer) {
-    //   for (var i = 0; i < layers.length; i++) {
-    //     var layer = layers[i];
-    //     addObject(layer.vertex, true);
-    //     addObject(layer.pathVertex, false);
-    //   }
-    // } else {
-    //   var vertex = [],
-    //     pathVertex = [];
-    //
-    //   for (var i = 0; i < layers.length; i++) {
-    //     var layer = layers[i];
-    //
-    //     vertex = vertex.concat(layer.vertex);
-    //     pathVertex = pathVertex.concat(layer.pathVertex);
-    //   }
-    //
-    //   addObject(vertex, true);
-    //   addObject(pathVertex, false);
-    // }
-
-    // object.quaternion.setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0));
-
-    // function disposeArray() {
-    //   this.array = null;
-    // }
-
-    // var pathGeometry = new THREE.BufferGeometry();
-    // var travelGeometry = new THREE.BufferGeometry();
-    // pathGeometry.addAttribute('position', new THREE.Float32BufferAttribute(pathVertices, 3).onUpload(disposeArray));
-    // travelGeometry.addAttribute('position', new THREE.Float32BufferAttribute(travelVertices, 3).onUpload(disposeArray));
-    //
-    // pathGeometry.rotateX(-Math.PI / 2);
-    // travelGeometry.rotateX(-Math.PI / 2);
-    //
-    // pathGeometry.computeBoundingSphere();
-    // travelGeometry.computeBoundingSphere();
-
-    let t2 = performance.now();
-    console.log(`Gcode parse: ${t2-t1} ms`);
 
     return [layers, layerIndices];
   }
