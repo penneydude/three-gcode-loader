@@ -151,8 +151,8 @@ GCodeLoader.prototype = {
 
     function addPath(p1, p2) {
       if (line.extruding) {
-        paths[paths.length - 1].push(new THREE.Vector3(p1.x, p1.y, p1.z));
-        paths[paths.length - 1].push(new THREE.Vector3(p2.x, p2.y, p2.z));
+        paths[paths.length - 1].push(new Vector3(p1.x, p1.y, p1.z));
+        paths[paths.length - 1].push(new Vector3(p2.x, p2.y, p2.z));
       } else {
         if (paths[paths.length - 1].length > 0) paths.push([]);
       }
